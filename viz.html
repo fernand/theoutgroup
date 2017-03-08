@@ -13,30 +13,10 @@
   pointer-events: none;
 }
 
-.lasso path {
-  stroke: rgb(80,80,80);
-  stroke-width:2px;
-}
-
-.lasso .drawn {
-  fill-opacity:.05 ;
-}
-
-.lasso .loop_close {
-  fill:none;
-  stroke-dasharray: 4,4;
-}
-
-.lasso .origin {
-  fill:#3399FF;
-  fill-opacity:.5;
-}
-
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-<script src = "./d3-lasso.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -75,57 +55,6 @@ var nodeColor = function(d) {
   }
 }
 
-// Lasso functions
-var lasso_start = function() {
-  lasso.items()
-    .classed("not_possible", true)
-    .classed("selected", false)
-    .select("circle")
-    .attr("fill", nodeColor);
-};
-
-var lasso_draw = function() {
-  // Style the possible dots
-  lasso.possibleItems()
-    .classed("not_possible", false)
-    .classed("possible", true);
-
-  // Style the not possible dot
-  lasso.notPossibleItems()
-    .classed("not_possible", true)
-    .classed("possible", false);
-};
-
-var lasso_end = function() {
-  // Reset the color of all dots
-  lasso.items()
-    .classed("not_possible", false)
-    .classed("possible", false);
-
-  // Style the selected dots
-  lasso.selectedItems()
-    .classed("selected", true)
-    .select("circle")
-    .attr("fill", "green");
-
-  // Reset the style of the not selected dots
-  lasso.notSelectedItems()
-    .select("circle")
-    .attr("fill", nodeColor);
-
-  postData();
-};
-
-// Init the lasso on the svg:g that contains the dots
-var lasso = d3.lasso()
-  .closePathSelect(true)
-  .closePathDistance(100)
-  .targetArea(svg)
-  .on("start", lasso_start)
-  .on("draw", lasso_draw)
-  .on("end", lasso_end);
-svg.call(lasso);
-
 d3.json("outgroup.json", function(error, graph) {
   if (error) throw error;
 
@@ -133,11 +62,7 @@ d3.json("outgroup.json", function(error, graph) {
   .call(d3.zoom()
     .scaleExtent([1 / 2, 4])
     .on("zoom", zoomed))
-  .on("dblclick.zoom", null)
-  .on("mousedown.zoom", null)
-  .on("touchstart.zoom", null)
-  .on("touchmove.zoom", null)
-  .on("touchend.zoom", null);
+  .on("dblclick.zoom", null);
 
   var g = svg.append("g");
 
@@ -151,8 +76,6 @@ d3.json("outgroup.json", function(error, graph) {
     .enter().append("g")
       .attr("class", "node")
     .on("dblclick", connectedNodes);
-
-  lasso.items(d3.selectAll(".node"));
 
   svg.on("click", function() {
     if (toggle == 1) {
@@ -244,16 +167,4 @@ function searchNode() {
           .style("opacity", 1);
   }
 }
-
-function postData() {
-  users = []
-  var selected = d3.selectAll(".selected")._groups[0]
-  selected.forEach(function(n){users.push(n.__data__.id)})
-  d3.json("http://localhost:5000/feed", function(error, data) {
-    if(data) console.log(data);
-  })
-  .header("Content-Type", "application/json")
-  .send("POST", JSON.stringify(users));
-}
-
 </script>
