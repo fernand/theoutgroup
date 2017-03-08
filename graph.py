@@ -9,13 +9,14 @@ MIN_DIST = 0.05
 MIN_DEGREE = 15
 
 MEDIA = loadj('media.json')
-BLACKLIST = ['bestsell']
+NEOCONSERVATIVES = frozenset([p.lower() for p in ['arthurbrooks', 'dpletka', 'FredBarnes', 'davidfrum', 'JonahNRO', 'brithume', 'krauthammer', 'BillKristol', 'JoshuaMuravchik', 'DanielPipes', 'jpodhoretz', 'JRubinBlogger', 'mrubin1971', 'jonathans_tobin']])
 
 def get_user_names():
     return loadj(PREFIX + 'user_names')
 
 def get_provenance():
-    prov = defaultdict(lambda:'')
+    media_prov = defaultdict(lambda:'')
+    is_conservative = defaultdict(lambda:False)
     files = [f for f in os.listdir(PREFIX) if f.find('_user')>0]
     for f_name in files:
         user = loadj(PREFIX + f_name)
@@ -23,9 +24,12 @@ def get_provenance():
             for match in matches:
                 user_desc = user['description'].lower()
                 screen_name = user['screen_name']
-                if match in user_desc and screen_name not in prov and 'bestsell' not in user_desc:
-                    prov[screen_name] = media
-    return prov
+                # NYT bestseller authors throw things off.
+                if match in user_desc and screen_name not in media_prov and 'bestsell' not in user_desc:
+                    media_prov[screen_name] = media
+                if 'conservative' in user_desc:
+                    is_conservative[screen_name] = True
+    return media_prov, is_conservative
 
 def get_edges():
     edges = []
@@ -48,19 +52,25 @@ def get_graph(edges):
     print(f'Num nodes after degree filter: {len(G.nodes())}')
     return G
 
-def write_graph(G, user_names, prov):
+def write_graph(G, user_names, media_prov, is_conservative):
     res = {'nodes': [], 'links': []}
     media = list(MEDIA.keys())[::-1]
     for n in G.nodes():
         user_name = user_names[n]
-        if prov[user_name] == '':
-            color = 0
+        if media_prov[user_name] == '':
+            media_index = 0
         else:
-            color = media.index(prov[user_name])+1
+            media_index = media.index(media_prov[user_name])+1
+        if user_name.lower() in NEOCONSERVATIVES:
+            neoconservative = True
+        else:
+            neoconservative = False
         res['nodes'].append({
             'id': user_name,
-            'media': prov[user_name],
-            'color': color
+            'media': media_prov[user_name],
+            'media_index': media_index,
+            'neoconservative': neoconservative,
+            'conservative': is_conservative[user_name]
         })
     for e in G.edges():
         res['links'].append({
@@ -73,6 +83,6 @@ def write_graph(G, user_names, prov):
 if __name__ == '__main__':
     user_names = get_user_names()
     edges = get_edges()
-    prov = get_provenance()
+    media_prov, is_conservative = get_provenance()
     G = get_graph(edges)
-    write_graph(G, user_names, prov)
+    write_graph(G, user_names, media_prov, is_conservative)

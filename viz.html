@@ -51,7 +51,7 @@
     <button type="button" onclick="searchNode()">Search</button>
 </div>
 
-<svg width="900" height="700"></svg>
+<svg width="800" height="900"></svg>
 
 <script>
 
@@ -70,13 +70,13 @@ var simulation = d3.forceSimulation()
     )
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-var color = d3.scaleSequential(d3.interpolateRdBu).domain([1, 25])
+var color = d3.scaleSequential(d3.interpolatePRGn).domain([1, 25])
 
 var nodeColor = function(d) {
-  if (d.color === 0) {
-    return 'black';
+  if (d.media_index === 0) {
+    return 'grey';
   } else {
-    return color(d.color);
+    return color(d.media_index);
   }
 }
 
