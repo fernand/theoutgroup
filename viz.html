@@ -2,11 +2,6 @@
 <meta charset="utf-8">
 <style>
 
-.links line {
-  stroke: #999;
-  stroke-opacity: 0.6;
-}
-
 .node circle {
   stroke: #fff;
   stroke-width: 1px;
@@ -159,13 +154,6 @@ d3.json("outgroup.json", function(error, graph) {
 
   lasso.items(d3.selectAll(".node"));
 
-  // var link = g
-  //     .attr("class", "links")
-  //   .selectAll("line")
-  //   .data(graph.links)
-  //   .enter().append("line")
-  //     .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
-
   svg.on("click", function() {
     if (toggle == 1) {
       node.style("opacity", 1);
@@ -193,12 +181,6 @@ d3.json("outgroup.json", function(error, graph) {
     .links(graph.links);
 
   function ticked() {
-    // link
-    //     .attr("x1", function(d) { return d.source.x; })
-    //     .attr("y1", function(d) { return d.source.y; })
-    //     .attr("x2", function(d) { return d.target.x; })
-    //     .attr("y2", function(d) { return d.target.y; });
-
     node
         .attr("transform", function(d) {
         return "translate(" + d.x + "," + d.y + ")"; });
@@ -228,15 +210,9 @@ d3.json("outgroup.json", function(error, graph) {
         node.style("opacity", function (o) {
             return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
         });
-
-        // link.style("opacity", function (o) {
-        //     return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
-        // });
-
         toggle = 1;
     } else {
         node.style("opacity", 1);
-        // link.style("opacity", 1);
         toggle = 0;
     }
   }
@@ -263,9 +239,7 @@ function searchNode() {
           return d.id != selectedVal;
       });
       selected.style("opacity", "0");
-      var link = svg.selectAll(".link")
-      link.style("opacity", "0");
-      d3.selectAll(".node, .links").transition()
+      d3.selectAll(".node").transition()
           .duration(5000)
           .style("opacity", 1);
   }
