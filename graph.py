@@ -2,32 +2,29 @@ import os.path
 from collections import defaultdict
 from networkx import Graph
 
-from crawler import PREFIX, SEED_NAMES
-from filter_distances import FILTERED
+from crawler import PREFIX
 from helpers import writej, loadj
 
 MIN_DIST = 0.05
 MIN_DEGREE = 15
 
-KRISTOF_RECS = frozenset(['DouthatNYT', 'MJGerson', 'StephensWSJ', 'JoeNBC', 'peggynoonannyc', 'reihan', 'arthurbrooks', 'ayaan', 'eliotacohen', 'Heritage', 'danielpipes', 'nfergus'])
-def kristof_val(name):
-    if name in KRISTOF_RECS:
-        return 1
-    else:
-        return 0
+MEDIA = loadj('media.json')
+BLACKLIST = ['bestsell']
 
 def get_user_names():
     return loadj(PREFIX + 'user_names')
 
-def get_provenance(user_names):
-    prov = defaultdict(lambda:[])
-    files = [f for f in os.listdir(PREFIX) if f.find('_friends')>0]
+def get_provenance():
+    prov = defaultdict(lambda:'')
+    files = [f for f in os.listdir(PREFIX) if f.find('_user')>0]
     for f_name in files:
-        user_id, screen_name, _ = f_name.split('_')
-        if screen_name not in FILTERED:
-            friends = loadj(PREFIX + f_name)
-            for f in friends:
-                prov[f].append(screen_name)
+        user = loadj(PREFIX + f_name)
+        for media, matches in MEDIA.items():
+            for match in matches:
+                user_desc = user['description'].lower()
+                screen_name = user['screen_name']
+                if match in user_desc and screen_name not in prov and 'bestsell' not in user_desc:
+                    prov[screen_name] = media
     return prov
 
 def get_edges():
@@ -53,11 +50,17 @@ def get_graph(edges):
 
 def write_graph(G, user_names, prov):
     res = {'nodes': [], 'links': []}
+    media = list(MEDIA.keys())[::-1]
     for n in G.nodes():
+        user_name = user_names[n]
+        if prov[user_name] == '':
+            color = 0
+        else:
+            color = media.index(prov[user_name])+1
         res['nodes'].append({
-            'id': user_names[n],
-            'friends': prov[n],
-            'color': kristof_val(user_names[n])
+            'id': user_name,
+            'media': prov[user_name],
+            'color': color
         })
     for e in G.edges():
         res['links'].append({
@@ -70,6 +73,6 @@ def write_graph(G, user_names, prov):
 if __name__ == '__main__':
     user_names = get_user_names()
     edges = get_edges()
-    prov = get_provenance(user_names)
+    prov = get_provenance()
     G = get_graph(edges)
     write_graph(G, user_names, prov)

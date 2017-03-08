@@ -1,0 +1,1 @@
+names=[];a = d3.selectAll(".node")._groups[0];a.forEach(function(n){if (n.classList.length===1){names.push(n.__data__.id)}});copy(JSON.stringify(names))
