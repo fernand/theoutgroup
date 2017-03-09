@@ -4,6 +4,7 @@ import os.path
 from crawler import PREFIX
 from helpers import loadj
 
+# We might want to ignore a few seeds we crawled.
 FILTERED = ['NickKristof', 'tylercowen', 'ezraklein', 'allidoisowen']
 
 def get_user_names():
