@@ -27,7 +27,7 @@ def get_friend_whitelist(user_names):
 def get_trimmable_nodes():
     return frozenset(loadj('to_trim.json'))
 
-def filter_distances(whitelist, user_names, to_trim, to_keep):
+def filter_distances(whitelist, user_names, to_trim):
     f_path = PREFIX + 'filtered_distances'
 
     if os.path.exists(f_path):
@@ -44,5 +44,4 @@ if __name__ == '__main__':
     user_names = get_user_names()
     whitelist = get_friend_whitelist(user_names)
     to_trim = get_trimmable_nodes()
-    to_keep = get_nodes_to_keep()
-    filter_distances(whitelist, user_names, to_trim, to_keep)
+    filter_distances(whitelist, user_names, to_trim)
