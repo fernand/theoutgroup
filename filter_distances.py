@@ -27,9 +27,6 @@ def get_friend_whitelist(user_names):
 def get_trimmable_nodes():
     return frozenset(loadj('to_trim.json'))
 
-def get_nodes_to_keep():
-    return frozenset(loadj('to_keep.json'))
-
 def filter_distances(whitelist, user_names, to_trim, to_keep):
     f_path = PREFIX + 'filtered_distances'
 
@@ -40,7 +37,6 @@ def filter_distances(whitelist, user_names, to_trim, to_keep):
         for l in f:
             id1, id2, _ = l.strip().split(',')
             if id1 in whitelist and id2 in whitelist and not user_names[id1] in to_trim and not user_names[id2] in to_trim:
-            # if user_names[id1] in to_keep and user_names[id2] in to_keep:
                 w.write(l)
 
 
