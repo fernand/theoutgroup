@@ -1,18 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-
 .node circle {
   stroke: #fff;
   stroke-width: 1px;
 }
-
-.node text {
-  fill: #000;
-  font: 10px sans-serif;
-  pointer-events: none;
-}
-
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -29,7 +21,6 @@
 <svg width="800" height="900"></svg>
 
 <script>
-
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
@@ -101,7 +92,8 @@ d3.json("outgroup.json", function(error, graph) {
   function ticked() {
     node
         .attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")"; });
+          return "translate(" + d.x + "," + d.y + ")";
+        });
   }
 
   //Toggle stores whether the highlighting is on
