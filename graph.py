@@ -78,7 +78,7 @@ def write_graph(G, user_names, media_prov, is_conservative):
             'target': user_names[e[1]],
             'value': G[e[0]][e[1]]['weight']
         })
-    writej(res, 'outgroup.json')
+    writej(res, 'website/outgroup.json')
 
 if __name__ == '__main__':
     user_names = get_user_names()
