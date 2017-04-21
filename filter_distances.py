@@ -1,5 +1,4 @@
 import os
-import os.path
 
 from crawler import PREFIX
 from helpers import loadj

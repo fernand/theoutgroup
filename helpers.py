@@ -1,5 +1,4 @@
 import os
-import os.path
 import json
 
 def writej(obj, f_path, overwrite=True):

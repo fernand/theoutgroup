@@ -1,5 +1,4 @@
 import os
-import os.path
 from collections import defaultdict
 from tqdm import tqdm
 
