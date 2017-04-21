@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 from multiprocessing import Pool
 from newspaper import Article
+import newspaper.nlp
 
 from helpers import loadj, writej
 from links import get_user_links
@@ -55,6 +56,10 @@ def load_keywords():
         keywords[l]['kws'] = frozenset(v['kws'])
         keywords[l]['users'] = v['users']
     return keywords
+
+def split_words(s):
+    words = newspaper.nlp.split_words(s)
+    return [w for w in words if w not in newspaper.nlp.stopwords]
 
 if __name__ == "__main__":
     gen_keywords()
