@@ -44,7 +44,8 @@ async def get_similar(request):
         if isec >= 4:
             matches[l]['isec'] = isec
             matches[l]['users'] = v['users']
-    return web.json_response(matches)
+    ordered = sorted(matches.items(), key=lambda k_v: len(k_v[1]['users']), reverse=True)
+    return web.json_response([{'url': k_v[0], 'isec': k_v[1]['isec'], 'users': k_v[1]['users']} for k_v in ordered])
 
 async def filter_links(all_links):
     ordered = sorted(all_links, key=all_links.get, reverse=True)
