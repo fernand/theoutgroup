@@ -9,18 +9,6 @@ from helpers import loadj
 MIN_DATE = '2017-04-10'
 USER_NAMES = loadj(PREFIX + 'user_names')
 
-def get_links(ids):
-    all_links = defaultdict(lambda:0)
-    for user_id in ids:
-        f_path = PREFIX + user_id + '_timeline'
-        try:
-            links = extract_links_from_timeline(loadj(f_path), include_retweets=False)
-            for l in links:
-                all_links[l] += 1
-        except Exception as e:
-            print(e)
-    return all_links
-
 def get_user_links(ids):
     user_links = {}
     print('Extracting links from user timelines...')
