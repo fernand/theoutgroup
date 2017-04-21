@@ -32,24 +32,21 @@ def gen_keywords():
         writej(keywords, KEYWORDS_PATH)
 
 def get_keywords_pmap(user_name, url):
-    try:
-        a = Article(url)
-        a.download()
-        a.parse()
-        a.nlp()
-        return (user_name, a.canonical_link, a.keywords)
-    except:
+    link_info = get_article_info(url)
+    if len(link_info['keywords']) > 0:
+        return (user_name, link_info['link'], link_info['keywords'])
+    else:
         return (None, None, None)
 
-def get_keywords(url):
+def get_article_info(url):
     try:
         a = Article(url)
         a.download()
         a.parse()
         a.nlp()
-        return a.keywords
+        return {'keywords': a.keywords, 'link': a.canonical_link}
     except:
-        return []
+        return {'keywords': [], 'link': a.canonical_link}
 
 def load_keywords():
     kws = loadj(KEYWORDS_PATH)

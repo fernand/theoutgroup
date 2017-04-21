@@ -21,7 +21,7 @@ def setup_routes(cors, app):
 # TODO: order by provenance coverage and not just isec.
 async def get_similar(request):
     data = await request.json()
-    current_kws = articles.get_keywords(data['url'])
+    current_kws = articles.get_article_info(data['url'])['keywords']
     matches = defaultdict(lambda:{})
     for l, v in KEYWORDS.items():
         isec = len(v['kws'].intersection(current_kws))
