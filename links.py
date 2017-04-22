@@ -33,7 +33,8 @@ def extract_links_from_timeline(tweets, include_retweets=True):
                 url_list = t['entities']['urls']
             for url_object in url_list:
                 url = url_object['expanded_url']
-                links.append(url)
+                # Remove query params, might not remove the top one (which can be fore ?).
+                links.append(url.split('?')[0])
     return links
 
 def to_date(tw_timestamp):
