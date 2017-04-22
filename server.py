@@ -31,12 +31,7 @@ def clamp(scalar):
     scalar = scalar / 350
     return int(scalar / 0.1) / 10
 
-def setup_routes(cors, app):
-    for (endpoint, handler) in [('/similar', get_similar), ('/search', search)]:
-        resource = cors.add(app.router.add_resource(endpoint))
-        route = cors.add(resource.add_route('POST', handler), CORS)
-
-async def get_similar(request):
+async def similar(request):
     data = await request.json()
     keywords = articles.get_article_info(data['url'])['keywords']
     return web.json_response(get_articles(keywords, from_article=True))
@@ -47,6 +42,9 @@ async def search(request):
     return web.json_response(get_articles(keywords, from_article=False))
 
 def get_articles(kws, from_article):
+    if len(kws) == 0 or len(kws) > 20:
+        return []
+
     if from_article:
         min_isec = MIN_ISEC_ARTICLE
     else:
@@ -68,9 +66,14 @@ def get_articles(kws, from_article):
     return [{
         'url': k_v[0],
         'isec': k_v[1]['isec'],
-        'users': k_v[1]['users'],
+        'num_users': len(k_v[1]['users']),
         'scalar': k_v[1]['scalar']
     } for k_v in ordered]
+
+def setup_routes(cors, app):
+    for (endpoint, handler) in [('/similar', similar), ('/search', search)]:
+        resource = cors.add(app.router.add_resource(endpoint))
+        route = cors.add(resource.add_route('POST', handler), CORS)
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()

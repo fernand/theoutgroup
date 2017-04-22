@@ -27,7 +27,7 @@ def append_listj(obj, f_path, el_id='id'):
         except Exception as e:
             print(e, f_path)
             curr_list = []
-        ids = [e[el_id] for e in curr_list]
+        ids = frozenset([e[el_id] for e in curr_list])
         for e in obj:
             if not e[el_id] in ids:
                 curr_list.append(e)

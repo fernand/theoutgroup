@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from multiprocessing import Pool
 from newspaper import Article
-import newspaper.nlp
+import newspaper.nlp as nlp
 
 from helpers import loadj, writej
 from links import get_user_links
@@ -52,12 +52,16 @@ def get_article_info(url):
         a = Article(url)
         a.download()
         a.parse()
-        a.nlp()
+        # Not doing a.nlp() to be more efficient.
+        text_keyws = list(nlp.keywords(a.text).keys())
+        title_keyws = list(nlp.keywords(a.title).keys())
+        keyws = list(set(title_keyws + text_keyws))
+
         if 'published_time' in a.meta_data['article']:
             published_time = a.meta_data['article']['published_time']
         else:
             published_time = ''
-        return {'keywords': a.keywords, 'link': a.canonical_link, 'published_time': published_time}
+        return {'keywords': keyws, 'link': a.canonical_link, 'published_time': published_time}
     except:
         return {'keywords': [], 'link': a.canonical_link, 'published_time': ''}
 
@@ -70,8 +74,8 @@ def load_keywords():
     return keywords
 
 def split_words(s):
-    words = newspaper.nlp.split_words(s)
-    return [w for w in words if w not in newspaper.nlp.stopwords]
+    words = nlp.split_words(s)
+    return [w for w in words if w not in nlp.stopwords]
 
 if __name__ == "__main__":
     gen_keywords()

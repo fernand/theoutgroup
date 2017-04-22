@@ -9,6 +9,10 @@ MAX_SEED_FOLLOWER_COUNT = 300000
 MIN_SEED_FOLLOWER_COUNT = 20000
 PREFIX = '/Users/fernand/theoutgroup/'
 
+USER_IDS = loadj(PREFIX + 'user_ids')
+GRAPH_NAMES = [n['id'] for n in loadj('website/outgroup.json')['nodes']]
+GRAPH_IDS = [USER_IDS[name] for name in GRAPH_NAMES]
+
 class ClientPool:
     def __init__(self, api_creds):
         self._index = 0
@@ -98,23 +102,26 @@ async def get_friends(user_id, screen_name, client):
 
     return friends
 
-async def write_timeline(user_id, client):
-    file_path = PREFIX + user_id + '_timeline'
-    try:
-        response = await client.api.statuses.user_timeline.get(
-            id=user_id,
-            exclude_replies=True,
-            count=200
-        )
-    except Exception as e:
-        print(e)
+def write_timeline(t_count):
+    async def w_timeline(user_id, client):
+        file_path = PREFIX + user_id + '_timeline'
+        try:
+            response = await client.api.statuses.user_timeline.get(
+                id=user_id,
+                exclude_replies=True,
+                count=t_count
+            )
+        except Exception as e:
+            print(e)
+            return
+
+        tweets = []
+        for t in response:
+            tweets.append(t)
+        append_listj(tweets, file_path)
         return
 
-    tweets = []
-    for t in response:
-        tweets.append(t)
-    append_listj(tweets, file_path)
-    return
+    return w_timeline
 
 async def write_followers(user_id, client):
     file_path = PREFIX + user_id + '_followers'
@@ -158,11 +165,11 @@ async def process_seed(seed_name, pool, f_queue, t_queue):
         if f_queue is not None:
             f_queue.enqueue(write_followers, friend_id, pool.get_client())
         if t_queue is not None:
-            t_queue.enqueue(write_timeline, friend_id, pool.get_client())
+            t_queue.enqueue(write_timeline(200), friend_id, pool.get_client())
 
     return
 
-async def run(fetch_followers=True, fetch_timelines=True):
+async def crawl(fetch_followers=True, fetch_timelines=True):
     api_creds = get_api_creds()
     pool = ClientPool(api_creds)
     to_wait = []
@@ -178,7 +185,17 @@ async def run(fetch_followers=True, fetch_timelines=True):
     await asyncio.wait([q.done() for q in to_wait])
     return
 
+async def refresh_graph_timelines():
+    api_creds = get_api_creds()
+    pool = ClientPool(api_creds)
+    t_queue = FetchQueue(len(api_creds))
+    for user_id in GRAPH_IDS:
+        t_queue.enqueue(write_timeline(20), user_id, pool.get_client())
+    await asyncio.wait([t_queue.done()])
+    return
+
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(False, True))
+    # loop.run_until_complete(crawl(False, True))
+    loop.run_until_complete(refresh_graph_timelines())
     loop.close()
