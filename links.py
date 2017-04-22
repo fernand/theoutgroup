@@ -6,7 +6,7 @@ from tqdm import tqdm
 from crawler import PREFIX
 from helpers import loadj
 
-MIN_DATE = '2017-04-10'
+MIN_DATE = '2017-04-01'
 USER_NAMES = loadj(PREFIX + 'user_names')
 
 def get_user_links(ids):
