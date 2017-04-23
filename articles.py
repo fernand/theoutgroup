@@ -50,8 +50,10 @@ def gen_keywords():
             keywords[c_link]['users'].add(user_name)
         else:
             parsed_links[l] = ''
+    # Make the keywords dict serializable.
     for c_link in keywords:
         keywords[c_link]['users'] = list(keywords[c_link]['users'])
+        keywords[c_link]['kws'] = list(keywords[c_link]['kws'])
 
     writej(keywords, KEYWORDS_PATH)
     writej(parsed_links, PARSED_LINKS_PATH)
