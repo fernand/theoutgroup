@@ -37,9 +37,11 @@ def gen_keywords():
             # Don't process the link if we already did.
             if l not in parsed_links:
                 all_links.append((user_name, l))
+                parsed_links[l] = ''
             elif parsed_links[l] != '':
                 keywords[parsed_links[l]]['users'].add(user_name)
 
+    print(f'{len(all_links)} to parse...')
     p = Pool(NUM_WORKERS)
     kw_tuples = p.starmap(get_keywords_pmap, all_links)
     for user_name, c_link, l, kws, p_time in kw_tuples:
