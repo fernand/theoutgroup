@@ -1,3 +1,4 @@
+ujson
 aiohttp
 aiohttp_cors
 networkx

@@ -1,5 +1,5 @@
 import os
-import json
+import ujson
 
 def writej(obj, f_path, overwrite=True):
     if os.path.exists(f_path):
@@ -9,14 +9,14 @@ def writej(obj, f_path, overwrite=True):
             return
 
     with open(f_path, 'w') as f:
-        json.dump(obj, f)
+        ujson.dump(obj, f)
 
 def loadj(f_path):
     if not os.path.exists(f_path):
         return None
     else:
         with open(f_path) as f:
-            return json.load(f)
+            return ujson.load(f)
 
 def append_listj(obj, f_path, el_id='id'):
     if not os.path.exists(f_path):
