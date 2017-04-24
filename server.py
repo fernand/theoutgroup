@@ -3,7 +3,6 @@ from collections import defaultdict
 import asyncio
 from aiohttp import web
 import aiohttp_cors
-import time
 
 from helpers import loadj
 import articles
@@ -34,14 +33,14 @@ def clamp(scalar):
 async def similar(request):
     data = await request.json()
     keywords = articles.get_article_info(data['url'])['keywords']
-    return web.json_response(get_articles(keywords, from_article=True))
+    return web.json_response(get_articles(request.app, keywords, from_article=True))
 
 async def search(request):
     data = await request.json()
     keywords = articles.split_words(data['query'])
-    return web.json_response(get_articles(keywords, from_article=False))
+    return web.json_response(get_articles(request.app, keywords, from_article=False))
 
-def get_articles(kws, from_article):
+def get_articles(app, kws, from_article):
     if len(kws) == 0 or len(kws) > 20:
         return []
 
@@ -50,8 +49,14 @@ def get_articles(kws, from_article):
     else:
         min_isec = len(kws)
     matches = defaultdict(lambda:{})
-    t1 = time.time()
-    for l, v in app['db'].items():
+
+    candidate_links = []
+    for kw in kws:
+        if kw in app['indices']:
+            candidate_links.extend(app['indices'][kw])
+
+    for l in candidate_links:
+        v = app['db'][l]
         isec = len(v['kws'].intersection(kws))
         users = v['users']
         if isec >= min_isec and len(users) >= MIN_USERS:
@@ -62,7 +67,6 @@ def get_articles(kws, from_article):
             avg_pos = (avg_pos[0] - M[0], avg_pos[1] - M[1])
             scalar = U[0] * avg_pos[0] + U[1] * avg_pos[1]
             matches[l]['scalar'] = clamp(scalar)
-    print(time.time()-t1)
 
     ordered = sorted(matches.items(), key=lambda k_v: k_v[1]['scalar'])
     return [{
@@ -73,10 +77,13 @@ def get_articles(kws, from_article):
     } for k_v in ordered]
 
 def build_indices(app):
-    app['indices'] = defaultdict(lambda:set())
+    tmp = defaultdict(lambda:set())
+    app['indices'] = {}
     for l in app['db']:
         for kw in app['db'][l]['kws']:
-            app['indices'][kw].add(l)
+            tmp[kw].add(l)
+    for kw in tmp:
+        app['indices'][kw] = list(tmp[kw])
 
 def setup_routes(cors, app):
     for (endpoint, handler) in [('/similar', similar), ('/search', search)]:
@@ -95,7 +102,7 @@ async def schedule(app, task, interval):
 
 def refresh_db(app):
     app['db'] = articles.load_keywords()
-    app['indices'] = build_indices(app)
+    build_indices(app)
 
 def cancel_sched(app):
     app['db_refresh'].cancel()
