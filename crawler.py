@@ -7,7 +7,7 @@ from helpers import loadj, writej, append_listj
 SEED_NAMES = ['dailykos', 'thinkprogress', 'HuffingtonPost', 'voxdotcom', 'nytimes', 'washingtonpost', 'politico', 'USATODAY', 'StephensWSJ', 'WSJ', 'arthurbrooks', 'EWErickson', 'nypost', 'BreitbartNews', 'RealAlexJones']
 MAX_SEED_FOLLOWER_COUNT = 300000
 MIN_SEED_FOLLOWER_COUNT = 20000
-PREFIX = '/root/theoutgroup/'
+PREFIX = '/root/timelines/'
 
 USER_IDS = loadj(PREFIX + 'user_ids')
 GRAPH_NAMES = [n['id'] for n in loadj('website/outgroup.json')['nodes']]
