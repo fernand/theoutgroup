@@ -190,7 +190,7 @@ async def refresh_graph_timelines():
     pool = ClientPool(api_creds)
     t_queue = FetchQueue(len(api_creds))
     for user_id in GRAPH_IDS:
-        t_queue.enqueue(write_timeline(20), user_id, pool.get_client())
+        t_queue.enqueue(write_timeline(50), user_id, pool.get_client())
     await asyncio.wait([t_queue.done()])
     return
 
