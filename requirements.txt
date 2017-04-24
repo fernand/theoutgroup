@@ -1,6 +1,7 @@
 ujson
 aiohttp
 aiohttp_cors
+numpy
 networkx
 peony-twitter
 pytz
