@@ -3,6 +3,7 @@ from collections import defaultdict
 import asyncio
 from aiohttp import web
 import aiohttp_cors
+import logging
 
 from crawler import PREFIX
 from helpers import loadj, writej
@@ -111,7 +112,7 @@ def setup_data(app):
 async def schedule(app, task, interval):
     while True:
         task(app)
-        await app.loop.create_task(asyncio.sleep(interval))
+        await asyncio.sleep(interval)
 
 def refresh_db(app):
     app['db'] = articles.load_keywords()
@@ -125,9 +126,10 @@ def cancel_sched(app):
     app['flush_cache'].cancel()
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='/root/server.log', level=logging.INFO)
     loop = asyncio.get_event_loop()
     app = web.Application(loop=loop)
     cors = aiohttp_cors.setup(app)
     setup_routes(cors, app)
     setup_data(app)
-    web.run_app(app, port=5000)
+    web.run_app(app, port=80, access_log_format='%a %t %Tf "%r" %s "%{Referrer}i" "%{User-Agent}i"')
