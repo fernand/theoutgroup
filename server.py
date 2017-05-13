@@ -1,4 +1,3 @@
-import math
 from collections import defaultdict
 import asyncio
 from aiohttp import web
@@ -7,6 +6,7 @@ import logging
 
 from crawler import PREFIX
 from helpers import loadj, writej
+import spectrum
 import articles
 
 CORS = {
@@ -17,21 +17,6 @@ CORS = {
     )
 }
 
-POSITION = loadj('node_positions.json')
-MIN_ISEC_ARTICLE = 3
-MIN_USERS = 3
-
-U = (1, -0.3601689858)
-UU = math.sqrt(U[0]*U[0]+U[1]*U[1])
-U = (U[0]/UU, U[1]/UU)
-M = (461.3168343280106, 445.9243631476138)
-
-# We're capping the political spectrum to -350, 350.
-# Resolution is 0.1.
-def clamp(scalar):
-    scalar = scalar / 350
-    return int(scalar / 0.1) / 10
-
 async def similar(request):
     data = await request.json()
     url = data['url'].split('?')[0]
@@ -41,50 +26,14 @@ async def similar(request):
     elif url in app['link_cache']:
         keywords = app['link_cache'][url]
     else:
-        keywords = articles.get_article_info(url)['keywords']
+        keywords =  articles.get_article_info(url)['keywords']
         app['link_cache'][url] = keywords
-    return web.json_response(get_articles(request.app, keywords, from_article=True))
+    return web.json_response(spectrum.get_articles(request.app, keywords, url))
 
 async def search(request):
     data = await request.json()
     keywords = articles.split_words(data['query'])
-    return web.json_response(get_articles(request.app, keywords, from_article=False))
-
-def get_articles(app, kws, from_article):
-    if len(kws) == 0 or len(kws) > 20:
-        return []
-
-    if from_article:
-        min_isec = MIN_ISEC_ARTICLE
-    else:
-        min_isec = len(kws)
-    matches = defaultdict(lambda:{})
-
-    candidate_links = []
-    for kw in kws:
-        if kw in app['indices']:
-            candidate_links.extend(app['indices'][kw])
-
-    for l in candidate_links:
-        v = app['db'][l]
-        isec = len(v['kws'].intersection(kws))
-        users = v['users']
-        if isec >= min_isec and len(users) >= MIN_USERS:
-            matches[l]['isec'] = isec
-            matches[l]['users'] = users
-            avg_pos = (sum([POSITION[u]['x'] for u in v['users']]) / len(users),
-                sum([POSITION[u]['y'] for u in v['users']]) / len(users))
-            avg_pos = (avg_pos[0] - M[0], avg_pos[1] - M[1])
-            scalar = U[0] * avg_pos[0] + U[1] * avg_pos[1]
-            matches[l]['scalar'] = clamp(scalar)
-
-    ordered = sorted(matches.items(), key=lambda k_v: k_v[1]['scalar'])
-    return [{
-        'url': k_v[0],
-        'isec': k_v[1]['isec'],
-        'num_users': len(k_v[1]['users']),
-        'scalar': k_v[1]['scalar']
-    } for k_v in ordered]
+    return web.json_response(spectrum.get_articles(request.app, keywords, None))
 
 def build_indices(app):
     tmp = defaultdict(lambda:set())
@@ -132,4 +81,4 @@ if __name__ == "__main__":
     cors = aiohttp_cors.setup(app)
     setup_routes(cors, app)
     setup_data(app)
-    web.run_app(app, port=80, access_log_format='%a %t %Tf "%r" %s "%{Referrer}i" "%{User-Agent}i"')
+    web.run_app(app, port=5000, access_log_format='%a %t %Tf "%r" %s "%{Referrer}i" "%{User-Agent}i"')

@@ -44,12 +44,13 @@ def gen_keywords():
     print(f'{len(all_links)} to parse...')
     p = Pool(NUM_WORKERS)
     kw_tuples = p.starmap(get_keywords_pmap, all_links)
-    for user_name, c_link, l, kws, p_time in kw_tuples:
+    for user_name, c_link, l, kws, p_time, title in kw_tuples:
         if c_link is not None:
             parsed_links[l] = c_link
             keywords[c_link]['kws'] = kws
             keywords[c_link]['time'] = p_time
             keywords[c_link]['users'].add(user_name)
+            keywords[c_link]['title'] = title
         else:
             parsed_links[l] = ''
     # Make the keywords dict serializable.
@@ -64,12 +65,12 @@ def get_keywords_pmap(user_name, url):
     try:
         link_info = get_article_info(url)
     except TimeoutError:
-        return (None, None, None, None, None)
+        return (None, None, None, None, None, None)
 
     if len(link_info['keywords']) > 0:
-        return (user_name, link_info['c_link'], url, link_info['keywords'], link_info['published_time'])
+        return (user_name, link_info['c_link'], url, link_info['keywords'], link_info['published_time'], link_info['title'])
     else:
-        return (None, None, None, None, None)
+        return (None, None, None, None, None, None)
 
 @timeout(3)
 def get_article_info(url):
@@ -86,9 +87,9 @@ def get_article_info(url):
             published_time = a.meta_data['article']['published_time']
         else:
             published_time = ''
-        return {'keywords': keyws, 'c_link': a.canonical_link, 'published_time': published_time}
+        return {'keywords': keyws, 'c_link': a.canonical_link, 'published_time': published_time, 'title': a.title}
     except:
-        return {'keywords': [], 'c_link': a.canonical_link, 'published_time': ''}
+        return {'keywords': [], 'c_link': a.canonical_link, 'published_time': '', 'title': ''}
 
 def load_keywords():
     kws = loadj(KEYWORDS_PATH)
