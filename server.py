@@ -28,12 +28,12 @@ async def similar(request):
     else:
         keywords =  articles.get_article_info(url)['keywords']
         app['link_cache'][url] = keywords
-    return web.json_response(spectrum.get_articles(request.app, keywords, url))
+    return web.json_response(spectrum.get_articles(app['db'], app['indices'], keywords, url))
 
 async def search(request):
     data = await request.json()
     keywords = articles.split_words(data['query'])
-    return web.json_response(spectrum.get_articles(request.app, keywords, None))
+    return web.json_response(spectrum.get_articles(app['db'], app['indices'], keywords, None))
 
 def build_indices(app):
     tmp = defaultdict(lambda:set())

@@ -8,6 +8,7 @@ U = (1, -0.3601689858)
 UU = math.sqrt(U[0]*U[0]+U[1]*U[1])
 U = (U[0]/UU, U[1]/UU)
 M = (461.3168343280106, 445.9243631476138)
+
 RES = 0.25
 RANGE = [i/100 for i in range(int(-1*100), int((1+RES)*100), int(RES*100))]
 
@@ -27,7 +28,7 @@ def get_scalar(users):
     scalar = U[0] * avg_pos[0] + U[1] * avg_pos[1]
     return clamp(scalar)
 
-def get_articles(app, kws, from_article):
+def get_articles(db, indices, kws, from_article):
     if len(kws) == 0 or len(kws) > 20:
         return []
 
@@ -37,20 +38,20 @@ def get_articles(app, kws, from_article):
         min_isec = len(kws)
 
     matches = {}
-    for i in spectrum.RANGE:
+    for i in RANGE:
         matches[i] = {}
 
     candidate_links = []
     for kw in kws:
-        if kw in app['indices']:
-            candidate_links.extend(app['indices'][kw])
+        if kw in indices:
+            candidate_links.extend(indices[kw])
 
     for l in candidate_links:
-        v = app['db'][l]
+        v = db[l]
         isec = len(v['kws'].intersection(kws))
         users = v['users']
         if isec >= min_isec and len(users) >= MIN_USERS and from_article != l:
-            scalar = spectrum.get_scalar(users)
+            scalar = get_scalar(users)
             matches[scalar][l] = {
                 'isec': isec,
                 'num_users': len(users),
@@ -62,7 +63,7 @@ def get_articles(app, kws, from_article):
     # If end result set is <5 enrich by picking secondary scoring articles.
     res = []
     secondary = []
-    for scalar in spectrum.RANGE:
+    for scalar in RANGE:
         ordered = sorted(matches[scalar].items(), key=lambda k_v: (k_v[1]['isec'], k_v[1]['num_users']), reverse=True)
         if len(ordered) >= 1:
             res.append({
