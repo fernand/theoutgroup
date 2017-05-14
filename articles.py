@@ -18,7 +18,7 @@ def gen_keywords():
     if os.path.exists(KEYWORDS_PATH):
         keywords = load_keywords()
     else:
-        keywords = defaultdict(lambda:{'users': set()})
+        keywords = {}
 
     # We're keeping a cache of already parsed links and also
     # are storing their matched canonical link to ensure that we can
@@ -38,7 +38,7 @@ def gen_keywords():
             if l not in parsed_links:
                 all_links.append((user_name, l))
                 parsed_links[l] = ''
-            elif parsed_links[l] != '':
+            elif parsed_links[l] != '' and parsed_links[l] in keywords:
                 keywords[parsed_links[l]]['users'].add(user_name)
 
     print(f'{len(all_links)} to parse...')
@@ -49,6 +49,8 @@ def gen_keywords():
             parsed_links[l] = c_link
             keywords[c_link]['kws'] = kws
             keywords[c_link]['time'] = p_time
+            if 'users' not in keywords[c_link]:
+                keywords[c_link]['users'] = set()
             keywords[c_link]['users'].add(user_name)
             keywords[c_link]['title'] = title
         else:
@@ -93,7 +95,7 @@ def get_article_info(url):
 
 def load_keywords():
     kws = loadj(KEYWORDS_PATH)
-    keywords = defaultdict(lambda:{'users': set()})
+    keywords = defaultdict(lambda:{})
     for l, v in kws.items():
         keywords[l]['users'] = set(v['users'])
         keywords[l]['kws'] = frozenset(v['kws'])
