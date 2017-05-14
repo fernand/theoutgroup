@@ -50,10 +50,6 @@ def get_articles(db, indices, kws, from_article):
         v = db[l]
         isec = len(v['kws'].intersection(kws))
         users = v['users']
-        if 'title' in v:
-            title = v['title']
-        else:
-            title = l
         # TODO: filter to last month
         if isec >= min_isec and len(users) >= MIN_USERS and from_article != l:
             scalar = get_scalar(users)
@@ -61,7 +57,7 @@ def get_articles(db, indices, kws, from_article):
                 'isec': isec,
                 'num_users': len(users),
                 'scalar': scalar,
-                'title': title
+                'title': v['title']
             }
 
     # Group articles by score.

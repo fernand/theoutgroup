@@ -97,6 +97,7 @@ def load_keywords():
     for l, v in kws.items():
         keywords[l]['users'] = set(v['users'])
         keywords[l]['kws'] = frozenset(v['kws'])
+        keywords[l]['title'] = v['title']
     return keywords
 
 def split_words(s):
