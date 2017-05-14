@@ -39,3 +39,10 @@ def extract_links_from_timeline(tweets, include_retweets=True):
 
 def to_date(tw_timestamp):
     return datetime.strptime(tw_timestamp,'%a %b %d %H:%M:%S +0000 %Y').replace(tzinfo=pytz.UTC).strftime('%Y-%m-%d')
+
+def get_hostname(url):
+    if url.find('://') > -1:
+        hostname = url.split('/')[2]
+    else:
+        hostname = url.split('/')[0]
+    return hostname.split(':')[0]
