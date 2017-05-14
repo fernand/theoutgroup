@@ -50,12 +50,14 @@ def get_articles(db, indices, kws, from_article):
         v = db[l]
         isec = len(v['kws'].intersection(kws))
         users = v['users']
+        # TODO: filter to last month
         if isec >= min_isec and len(users) >= MIN_USERS and from_article != l:
             scalar = get_scalar(users)
             matches[scalar][l] = {
                 'isec': isec,
                 'num_users': len(users),
-                'scalar': scalar
+                'scalar': scalar,
+                'title': v['title']
             }
 
     # Group articles by score.
@@ -70,13 +72,15 @@ def get_articles(db, indices, kws, from_article):
                 'url': ordered[0][0],
                 'isec': ordered[0][1]['isec'],
                 'num_users': ordered[0][1]['num_users'],
-                'scalar': scalar
+                'title': ordered[0][1]['title'],
+                'scalar': scalar,
             })
         if len(ordered) >= 2:
             secondary.append({
                 'url': ordered[1][0],
                 'isec': ordered[1][1]['isec'],
                 'num_users': ordered[1][1]['num_users'],
+                'title': ordered[1][1]['title'],
                 'scalar': scalar
             })
 

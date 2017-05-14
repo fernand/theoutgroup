@@ -9,7 +9,7 @@ from helpers import loadj, writej
 from links import get_user_links
 from crawler import PREFIX
 
-NUM_WORKERS = 1
+NUM_WORKERS = 16
 KEYWORDS_PATH = PREFIX + 'links_keywords.json'
 PARSED_LINKS_PATH = PREFIX + 'parsed_links.json'
 USER_IDS = loadj(PREFIX + 'user_ids')
